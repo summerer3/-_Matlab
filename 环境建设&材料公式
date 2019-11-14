@@ -1,0 +1,60 @@
+function y = delta_T_h(t)
+q_h = 1; %-----------------
+C_h = 1; %-----------------
+a = 1; %-----------------
+h_c = 1; %-----------------
+L = 1; %-----------------
+lamda = 1; %-----------------
+Z = h_c*L/lamda;
+R = L*lamda/(a*C_h);
+K = h_c/C_h;
+global Z k
+Z = 1; %------------------输入Z
+k = 1; %------------------输入k
+zn = [];
+iter = [];
+num_max = 300; %-----------------
+for i = 0:num_max
+    iter_max = 999;
+    z1 = i*pi + 1e-6;
+    z2 = pi*(0.5 + i);
+    n = 0;
+    while n <= iter_max
+        z_m = (z1 + z2)/2;
+        if abs(z1-z2)<1e-5
+        break;
+        end
+        n = n+1;
+        if f(z1)*f(z_m)>0
+            z1 = z_m;
+        else
+            z2 = z_m;
+        end
+    end
+    zn = [zn z1]; iter = [iter n];
+end
+
+Pn = zn.^6 + zn.^4*(Z^2 + Z - 2*k*Z) + k*Z^2*(1+k)*zn.^2;
+bn = zn.^2*a/L^2;
+
+N_3 = 0;
+for n = 1:num_max+1
+    an = (zn(n)^2-k*Z)/Pn(n)/(1-bn(n)/K)*(exp(-bn(n)*t) - exp(-K*t));
+    N_3 = N_3 + an;
+end
+
+A1 = C_h*k*a/lamda/h_c/(k+1)/L;
+A2 = 0.5 - (3 + 6/Z + k)/6/(1 + k);
+A3 = L*k/lamda/(k+1);
+B = q_h*k*a/lamda/(k+1)/L*t;
+
+f1 = q_h*(A1 - A3*A2 - 1/h_c)*exp(-K*t);
+f2 = B + q_h*(A3*A2 + 1/h_c - A1);
+f3 = q_h*L/lamda*2*Z*k*N_3;
+
+y = f1+f2+f3;
+end
+function y = f(z)
+global Z k
+y = cot(z) + k/z - z/Z;
+end
