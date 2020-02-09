@@ -1,1 +1,32 @@
+close all; clear all, clc
+a_init = [ 0; 5; 0];% 输入加速度。
+x1 = a_init(1);
+y1 = a_init(2);
+z1 = a_init(3);
+a_update = roating(0, 0, pi/3)*a_init;% 输入倾斜角度。
+% a_update = a_update + [0; 0; 9.8];
+x = a_update(1);
+y = a_update(2);
+z = a_update(3);
+scatter3(x,y,z,'ob','filled')
+hold on 
+scatter3(x1,y1,z1,'or','filled')
+plot3([0,x],[0,y],[0,z],'-')
+plot3([0,x1],[0,y1],[0,z1],'-')
+grid on 
+axis([-10 10 -10 10 -10 10])
 
+
+function f = roating(a, b, c)
+f = [cos(a)*cos(c)+sin(a)*sin(b)*sin(c) ...
+    cos(c)*sin(a)*sin(b)-cos(a)*sin(c) ...
+    cos(b)*sin(a);
+    
+    cos(b)*sin(c) ...
+    cos(b)*cos(c) ...
+    -sin(b);
+    
+    cos(a)*sin(b)*sin(c)-sin(a)*cos(c) ...
+    sin(a)*sin(c)+cos(a)*cos(c)*sin(b) ...
+    cos(a)*cos(b)];
+end
