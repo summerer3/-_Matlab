@@ -1,1 +1,187 @@
-判断二维码对边是否连接
+close all; clear; clc
+%%% 生成50*50随机矩阵
+size_p = 50;
+p = 0.3;
+a = rand(50);
+for i = 1:50
+    for j = 1:50
+        if (a(i,j)<=p)
+            a(i,j)=1;
+        else
+            a(i,j)=0;
+        end
+    end
+end
+global a_
+a_ = zeros(52,52);
+a_(2:51,2:51)=a;
+pic(:,:,1)=a;
+pic(:,:,2)=a;
+pic(:,:,3)=a;
+figure;imshow(a)
+pcolor(a)
+colormap(gray)
+axis square
+
+count=0;
+count_b=0;
+tmp=false; %%%判断是否连接
+%%% 下边---------------------------------------------------------------------------
+for n=1:50
+    p=[1,n];
+    if a(p(1),p(2))==1
+        count=count+1;
+        eval(['ls',num2str(count),'=get_c([p(1),p(2)]);']);
+        ls_=eval(['ls',num2str(count)]);
+        if max(ls_(:,1))==50
+            count_b=count_b+1;
+            eval(['ls_b',num2str(count_b),'=','ls',num2str(count),';'])
+            tmp = true;
+        end
+    end
+end
+%%% 左边---------------------------------------------------------------------------
+for n=1:50
+    p=[n,1];
+    if a(p(1),p(2))==1
+        count=count+1;
+        eval(['ls',num2str(count),'=get_c([p(1),p(2)]);']);
+        ls_=eval(['ls',num2str(count)]);
+        if max(ls_(:,2))==50
+            count_b=count_b+1;
+            eval(['ls_b',num2str(count_b),'=','ls',num2str(count),';'])
+            tmp = true;
+        end
+    end
+end
+%%% 上边---------------------------------------------------------------------------
+for n=1:50
+    p=[50,n];
+    if a(p(1),p(2))==1
+        count=count+1;
+        eval(['ls',num2str(count),'=get_c([p(1),p(2)]);']);
+        ls_=eval(['ls',num2str(count)]);
+        if min(ls_(:,1))==1
+            count_b=count_b+1;
+            eval(['ls_b',num2str(count_b),'=','ls',num2str(count),';'])
+            tmp = true;
+        end
+    end
+end
+%%% 右边---------------------------------------------------------------------------
+for n=1:50
+    p=[n,50];
+    if a(p(1),p(2))==1
+        count=count+1;
+        eval(['ls',num2str(count),'=get_c([p(1),p(2)]);']);
+        ls_=eval(['ls',num2str(count)]);
+        if min(ls_(:,2))==1
+            count_b=count_b+1;
+            eval(['ls_b',num2str(count_b),'=','ls',num2str(count),';'])
+            tmp = true;
+        end
+    end
+end
+if tmp==true
+    disp('已连通。')
+else
+    disp('没有连通。')
+end
+
+%%% 绘图---------------------------------------------------------------------------
+%%% 蓝色---------------------------------------------------------------------------
+for i=1:50
+    for j=1:50
+        if a_(i+1,j+1)==1
+            pic(i,j,2)=0;
+            pic(i,j,1)=0;
+            pic(i,j,3)=255;
+        end
+    end
+end
+%%% 红色---------------------------------------------------------------------------
+for i=1:50
+    for j=1:50
+        if pic(i,j,1)==1
+            pic(i,j,2)=0;
+            pic(i,j,3)=0;
+        end
+    end
+end
+%%% 蓝色---------------------------------------------------------------------------
+for i=1:50
+    for j=1:50
+        if pic(i,j,1)==0&&pic(i,j,2)==0&&pic(i,j,3)==0
+            pic(i,j,1)=255;
+            pic(i,j,2)=255;
+            pic(i,j,3)=255;
+        end
+    end
+end
+
+if tmp==true
+    for i=1:count_b
+        ls_=eval(['ls_b',num2str(i)]);
+        for j=1:size(ls_,1)
+            p=ls_(j,:);
+            pic(p(1),p(2),1)=0;
+            pic(p(1),p(2),2)=0;
+            pic(p(1),p(2),3)=0;
+        end
+    end
+end
+
+imshow(pic)
+
+%%% 吃掉周围的白点---------------------------------------------------------------------------
+function y=eaten(p)
+    global a_
+    p=p+[1,1];
+    a_(p(1),p(2))=0;
+    uu=[1,0];
+    rr=[0,1];
+    dd=[-1,0];
+    ll=[0,-1];
+    ur=[1,1];
+    ul=[1,-1];
+    dl=[-1,-1];
+    dr=[-1,1];
+    lop=[uu;rr;dd;ll;ur;ul;dl;dr];
+    lis=[];
+    for i=1:8
+        pos=p+lop(i,:);
+        if a_(pos(1),pos(2))==1
+            a_(pos(1),pos(2))=0;
+            lis(end+1,:)=[pos(1)-1,pos(2)-1];
+
+        end
+    end
+    y=lis;
+end
+
+%%% 得到ls_n---------------------------------------------------------------------------
+function c=get_c(p)
+    for i=1:150
+        p=[p;travel(p)];
+    end
+    c=p;
+end
+%%% 延伸像素点---------------------------------------------------------------------------
+function y=travel(l)
+    lis=[];
+    for i=1:size(l,1)
+        p=l(i,:);
+        ym=eaten(p);
+        lis=[lis;ym];
+    end
+    y=lis;
+end
+%%% 查看ls——n---------------------------------------------------------------------------
+function draw(ls)
+    pc=zeros(50,50);
+    for i=1:size(ls,1)
+        p=[ls(i,1),ls(i,2)];
+        pc(p(1),p(2))=1;
+    end
+    figure;imshow(pc)
+end
